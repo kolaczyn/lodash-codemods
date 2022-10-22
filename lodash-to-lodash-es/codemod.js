@@ -6,10 +6,35 @@ const codemod = (fileInfo, { jscodeshift: j }) => {
     .find(j.ImportDeclaration)
     .filter((nodePath) => nodePath.value.source.value.startsWith('lodash'))
 
+  let replacementSpecifiers = []
+  /** @type {import('@types/jscodeshift').ASTNode} */
+  let first = null
+
   lodashImports.forEach((nodePath) => {
+    // "lodash/mapValues" -> "mapValues"
     const id = nodePath.value.source.value.replace('lodash/', '')
-    // nodePath.value.source.value.replace('lodash', 'lodash-es')
+    const [specifier] = nodePath.value.specifiers
+    const name = specifier ? specifier.local.name : id
+
+    const replacementSpecifier = j.importSpecifier(
+      j.identifier(id),
+      j.identifier(name),
+    )
+    replacementSpecifiers.push(replacementSpecifier)
+
+    if (!first) {
+      first = nodePath
+    } else {
+      j(nodePath).remove()
+    }
   })
+
+  if (first) {
+    first.value.specifiers = replacementSpecifiers
+    first.value.source.value = 'lodash-es'
+  }
+
+  console.log('->', first.value.source.loc.lines, '<-')
 
   return root.toSource()
 }
