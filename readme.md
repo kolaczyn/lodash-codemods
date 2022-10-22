@@ -5,5 +5,8 @@
 yarn global add jscodeshift@0.14.0
 # run lodash-to-lodash-es on example code
 cd lodash-to-lodash-es
-jscodeshift -t ./codemod.js ./example-input.js -d -p
+# run a shell script
+./run.sh
+# If it doesn't work,
+# because you're on Windows, why?
 ```
